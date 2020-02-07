@@ -22,12 +22,20 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.india.speechtotext.retrofitsdk.APIClient;
+import com.india.speechtotext.retrofitsdk.Service;
+import com.india.speechtotext.retrofitsdk.response.ExampleResponse;
 
 import java.util.ArrayList;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 
@@ -52,6 +60,28 @@ public class MainActivity extends AppCompatActivity {
             Snackbar.make(linearLayout, "Permission already granted.", Snackbar.LENGTH_LONG).show();
         }
         speechInputAction();
+        serviceCall();
+    }
+
+    private void serviceCall() {
+        Service service = new APIClient.Builder().build(getApplicationContext()).getService();
+        service.getExampleResponse().enqueue(new Callback<ExampleResponse>() {
+            @Override
+            public void onResponse(Call<ExampleResponse> call, Response<ExampleResponse> response) {
+                if (response.isSuccessful()) {
+                    if (response.body().getResult().equalsIgnoreCase("success")) {
+                        String mResult = response.body().getName();
+                        Log.d("name", mResult);
+                        Toast.makeText(MainActivity.this, mResult, Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ExampleResponse> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Someting went wrong", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @SuppressLint("ClickableViewAccessibility")
