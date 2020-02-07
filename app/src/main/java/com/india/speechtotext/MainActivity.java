@@ -1,16 +1,18 @@
 package com.india.speechtotext;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -18,26 +20,37 @@ import android.speech.SpeechRecognizer;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.airbnb.lottie.LottieAnimationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.Locale;
 
+import static android.Manifest.permission.RECORD_AUDIO;
+
 public class MainActivity extends AppCompatActivity {
 
+    private static final int PERMISSION_REQUEST_CODE = 200;
     private TextView tvSpeechInput;
     private LottieAnimationView speakerBtn;
     SpeechRecognizer mSpeechRecognizer;
     Intent mSpeechRecognizerIntent;
+    LinearLayout linearLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        checkFroRunTimePermission();
         initializationView();
+        if (!checkPermission()) {
+            requestPermission();
+
+        } else {
+            Snackbar.make(linearLayout, "Permission already granted.", Snackbar.LENGTH_LONG).show();
+        }
         speechInputAction();
     }
 
@@ -126,20 +139,67 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializationView() {
+        linearLayout = findViewById(R.id.linear_parent);
         tvSpeechInput = findViewById(R.id.speech_text_id);
         speakerBtn = findViewById(R.id.speech_image_id);
         tvSpeechInput.setText("You will see input here");
     }
 
-    private void checkFroRunTimePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)) {
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.parse("package:" + getPackageName()));
-                startActivity(intent);
-                finish();
-            }
+    private boolean checkPermission() {
+        int result = ContextCompat.checkSelfPermission(getApplicationContext(), RECORD_AUDIO);
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, RECORD_AUDIO)) {
+
+        }
+        ActivityCompat.requestPermissions(this, new String[]{RECORD_AUDIO}, PERMISSION_REQUEST_CODE);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0) {
+                    boolean audioRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    if (audioRecordAccepted)
+                        Snackbar.make(linearLayout, "Permission Granted, Now you can access record audio.", Snackbar.LENGTH_LONG).show();
+                    else {
+                        Snackbar.make(linearLayout, "Permission Denied, You cannot access record audio.", Snackbar.LENGTH_LONG).show();
+
+                        boolean showRationale = shouldShowRequestPermissionRationale(RECORD_AUDIO);
+                        if (!showRationale) {
+                            openSettingsDialog();
+                        }
+                    }
+                }
+
+                break;
         }
     }
 
+    private void openSettingsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setTitle("Required Permissions");
+        builder.setMessage("This app require permission to use audio record feature. Grant them in app settings.");
+        builder.setPositiveButton("Take Me To SETTINGS", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivityForResult(intent, 101);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.show();
+    }
 }
