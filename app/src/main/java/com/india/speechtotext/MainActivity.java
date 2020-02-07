@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -45,7 +46,10 @@ public class MainActivity extends AppCompatActivity {
         mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
         mSpeechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
         mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Say Something");
+        mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 
         mSpeechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
@@ -81,10 +85,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResults(Bundle results) {
                 ArrayList<String> arrayList = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                if(arrayList != null){
-                    tvSpeechInput.setText(arrayList.get(0));
-                    Log.e("TAG",arrayList.get(0));
-                }
+                tvSpeechInput.setText(arrayList.get(0));
+                Log.e("TAG", "onResults--->" + arrayList.get(0));
+
             }
 
             @Override
@@ -103,13 +106,14 @@ public class MainActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_UP:
-                        Log.e("TAG ","onTouch off");
+                        Log.e("TAG ", "onTouch ACTION_UP");
+                        tvSpeechInput.setText("You will see input here");
                         mSpeechRecognizer.stopListening();
                         speakerBtn.cancelAnimation();
                         break;
 
                     case MotionEvent.ACTION_DOWN:
-                        Log.e("TAG ","onTouch on");
+                        Log.e("TAG ", "onTouch ACTION_DOWN");
                         tvSpeechInput.setText("");
                         tvSpeechInput.setHint("Listening...");
                         speakerBtn.playAnimation();
