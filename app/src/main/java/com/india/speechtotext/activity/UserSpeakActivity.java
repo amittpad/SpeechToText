@@ -1,4 +1,4 @@
-package com.india.speechtotext;
+package com.india.speechtotext.activity;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
@@ -26,9 +26,11 @@ import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.india.speechtotext.R;
+import com.india.speechtotext.ResponsesSingleton;
 import com.india.speechtotext.retrofitsdk.APIClient;
 import com.india.speechtotext.retrofitsdk.Service;
-import com.india.speechtotext.retrofitsdk.response.ExampleResponse;
+import com.india.speechtotext.retrofitsdk.response.DictionaryResponse;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -39,7 +41,7 @@ import retrofit2.Response;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 
-public class MainActivity extends AppCompatActivity {
+public class UserSpeakActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 200;
     private TextView tvSpeechInput;
@@ -51,41 +53,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_user_speak);
         initializationView();
-        if (!checkPermission()) {
-            requestPermission();
-
-        } else {
-            Snackbar.make(linearLayout, "Permission already granted.", Snackbar.LENGTH_LONG).show();
-        }
-        speechInputAction();
-        serviceCall();
+        onClickSpeakerAction();
     }
 
-    private void serviceCall() {
-        Service service = new APIClient.Builder().build(getApplicationContext()).getService();
-        service.getExampleResponse().enqueue(new Callback<ExampleResponse>() {
-            @Override
-            public void onResponse(Call<ExampleResponse> call, Response<ExampleResponse> response) {
-                if (response.isSuccessful()) {
-                    if (response.body().getResult().equalsIgnoreCase("success")) {
-                        String mResult = response.body().getName();
-                        Log.d("name", mResult);
-                        Toast.makeText(MainActivity.this, mResult, Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ExampleResponse> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Someting went wrong", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 
     @SuppressLint("ClickableViewAccessibility")
-    private void speechInputAction() {
+    private void onClickSpeakerAction() {
         mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
         mSpeechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
@@ -156,6 +131,9 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case MotionEvent.ACTION_DOWN:
+                        if (!checkPermission()) {
+                            requestPermission();
+                        }
                         Log.e("TAG ", "onTouch ACTION_DOWN");
                         tvSpeechInput.setText("");
                         tvSpeechInput.setHint("Listening...");
@@ -211,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openSettingsDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(UserSpeakActivity.this);
         builder.setTitle("Required Permissions");
         builder.setMessage("This app require permission to use audio record feature. Grant them in app settings.");
         builder.setPositiveButton("Take Me To SETTINGS", new DialogInterface.OnClickListener() {
@@ -231,5 +209,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         builder.show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(UserSpeakActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 }

@@ -1,5 +1,6 @@
 package com.india.speechtotext.retrofitsdk;
 
+import com.india.speechtotext.retrofitsdk.response.DictionaryResponse;
 import com.india.speechtotext.retrofitsdk.response.ExampleResponse;
 
 import retrofit2.Call;
@@ -12,8 +13,8 @@ public interface Service {
 //                                              @Field("student_teachers_password") String Password,
 //                                              @Field("grade_level") String Grade);
 
-    @GET("hpuku")
-    Call<ExampleResponse> getExampleResponse();
+    @GET("dictionary-v2.json")
+    Call<DictionaryResponse> getDictionaryResponse();
 
 
 }
