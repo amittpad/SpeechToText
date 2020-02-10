@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.View;
 import android.widget.Toast;
 
@@ -17,6 +18,8 @@ import com.india.speechtotext.adapter.DictionaryListAdapter;
 import com.india.speechtotext.retrofitsdk.APIClient;
 import com.india.speechtotext.retrofitsdk.Service;
 import com.india.speechtotext.retrofitsdk.response.DictionaryResponse;
+
+import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -72,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
     public void btnSpeak(View view) {
         Intent intent = new Intent(MainActivity.this, UserSpeakActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        Bundle bundle = new Bundle();
+        bundle.putParcelableArrayList("dictionary", (ArrayList<? extends Parcelable>) ResponsesSingleton.getInstance().getDictionaryResponse().getDictionary());
+        intent.putExtras(bundle);
         startActivity(intent);
     }
 }

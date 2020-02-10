@@ -30,9 +30,11 @@ import com.india.speechtotext.R;
 import com.india.speechtotext.ResponsesSingleton;
 import com.india.speechtotext.retrofitsdk.APIClient;
 import com.india.speechtotext.retrofitsdk.Service;
+import com.india.speechtotext.retrofitsdk.pojo.Dictionary;
 import com.india.speechtotext.retrofitsdk.response.DictionaryResponse;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import retrofit2.Call;
@@ -49,12 +51,15 @@ public class UserSpeakActivity extends AppCompatActivity {
     SpeechRecognizer mSpeechRecognizer;
     Intent mSpeechRecognizerIntent;
     LinearLayout linearLayout;
+    private List<Dictionary> dictionaryList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_speak);
         initializationView();
+        dictionaryList = getIntent().getParcelableArrayListExtra("dictionary");
+        Log.e("TAG","dictionary word size --->" + dictionaryList.size());
         onClickSpeakerAction();
     }
 
@@ -103,9 +108,21 @@ public class UserSpeakActivity extends AppCompatActivity {
             @Override
             public void onResults(Bundle results) {
                 ArrayList<String> arrayList = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                tvSpeechInput.setText(arrayList.get(0));
-                Log.e("TAG", "onResults--->" + arrayList.get(0));
-
+                tvSpeechInput.setText(arrayList.get(0).toLowerCase().replace(".", ""));
+                Log.e("TAG", "onResults--->" + arrayList.get(0).toLowerCase().replace(".", ""));
+                for(int i = 0; i < dictionaryList.size(); i++){
+                    if(dictionaryList.get(i).getWord().toLowerCase().matches(arrayList.get(0).toLowerCase().replace(".", ""))){
+                        Log.e("TAG","Word found in dictionary!");
+                        Intent intent = new Intent(UserSpeakActivity.this, MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        Toast.makeText(UserSpeakActivity.this, "Word Found", Toast.LENGTH_SHORT).show();
+                        break;
+                    }else {
+                        Log.e("TAG","Word not found in dictionary!");
+                        Toast.makeText(UserSpeakActivity.this, "Word Not Found", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
 
             @Override
