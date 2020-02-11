@@ -29,12 +29,17 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private DictionaryListAdapter dictionaryListAdapter;
+    private String foundWord = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initializationView();
+        Bundle bundle= getIntent().getExtras();
+        if(bundle!= null){
+            foundWord = bundle.getString("key_found_word");
+        }
         loadDictionaryFromServer();
     }
 
@@ -64,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         @SuppressLint("WrongConstant") LinearLayoutManager layoutManager = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.VERTICAL, false);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
-        dictionaryListAdapter = new DictionaryListAdapter(MainActivity.this, ResponsesSingleton.getInstance().getDictionaryResponse().getDictionary());
+        dictionaryListAdapter = new DictionaryListAdapter(MainActivity.this, ResponsesSingleton.getInstance().getDictionaryResponse().getDictionary(),foundWord);
         recyclerView.setAdapter(dictionaryListAdapter);
     }
 

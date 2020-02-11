@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -107,16 +108,23 @@ public class UserSpeakActivity extends AppCompatActivity {
 
             @Override
             public void onResults(Bundle results) {
-                ArrayList<String> arrayList = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                final ArrayList<String> arrayList = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 tvSpeechInput.setText(arrayList.get(0).toLowerCase().replace(".", ""));
                 Log.e("TAG", "onResults--->" + arrayList.get(0).toLowerCase().replace(".", ""));
                 for(int i = 0; i < dictionaryList.size(); i++){
                     if(dictionaryList.get(i).getWord().toLowerCase().matches(arrayList.get(0).toLowerCase().replace(".", ""))){
                         Log.e("TAG","Word found in dictionary!");
-                        Intent intent = new Intent(UserSpeakActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
                         Toast.makeText(UserSpeakActivity.this, "Word Found", Toast.LENGTH_SHORT).show();
+
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                Intent intent = new Intent(UserSpeakActivity.this, MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                intent.putExtra("key_found_word", arrayList.get(0).toLowerCase());
+                                startActivity(intent);
+                            }
+                        },2000);
                         break;
                     }else {
                         Log.e("TAG","Word not found in dictionary!");
