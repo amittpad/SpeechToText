@@ -58,15 +58,18 @@ public class UserSpeakActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_speak);
+
+        /** check runtime permission */
         if (!checkPermission()) {
             requestPermission();
         }
+
+        /** initialize the Ids */
         initializationView();
-        dictionaryList = getIntent().getParcelableArrayListExtra("dictionary");
-        Log.e("TAG","dictionary word size --->" + dictionaryList.size());
+
+       /** tap to mic speak btn */
         onClickSpeakerAction();
     }
-
 
     @SuppressLint("ClickableViewAccessibility")
     private void onClickSpeakerAction() {
@@ -114,10 +117,10 @@ public class UserSpeakActivity extends AppCompatActivity {
                 final ArrayList<String> arrayList = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 tvSpeechInput.setText(arrayList.get(0).toLowerCase().replace(".", ""));
                 Log.e("TAG", "onResults--->" + arrayList.get(0).toLowerCase().replace(".", ""));
-                for(int i = 0; i < dictionaryList.size(); i++){
-                    if(dictionaryList.get(i).getWord().toLowerCase().matches(arrayList.get(0).toLowerCase().replace(".", ""))){
-                        Log.e("TAG","Word found in dictionary!");
-                        Toast.makeText(UserSpeakActivity.this, "Word Found", Toast.LENGTH_SHORT).show();
+                for (int i = 0; i < dictionaryList.size(); i++) {
+                    if (dictionaryList.get(i).getWord().toLowerCase().matches(arrayList.get(0).toLowerCase().replace(".", ""))) {
+                        Log.e("TAG", "Word found in dictionary!");
+                        Toast.makeText(UserSpeakActivity.this, "Word is available in the dictionary", Toast.LENGTH_LONG).show();
 
                         new Handler().postDelayed(new Runnable() {
                             @Override
@@ -127,11 +130,11 @@ public class UserSpeakActivity extends AppCompatActivity {
                                 intent.putExtra("key_found_word", arrayList.get(0).toLowerCase().replace(".", ""));
                                 startActivity(intent);
                             }
-                        },2000);
+                        }, 2000);
                         break;
-                    }else {
-                        Log.e("TAG","Word not found in dictionary!");
-                        Toast.makeText(UserSpeakActivity.this, "Word Not Found", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.e("TAG", "Word not found in dictionary!");
+                        Toast.makeText(UserSpeakActivity.this, "Word is not available in the dictionary", Toast.LENGTH_LONG).show();
                     }
                 }
             }
@@ -159,11 +162,19 @@ public class UserSpeakActivity extends AppCompatActivity {
                         break;
 
                     case MotionEvent.ACTION_DOWN:
+                        Log.e("TAG ", "onTouch ACTION_DOWN");
                         if (!checkPermission()) {
                             requestPermission();
-                        }else {
-                            //requestPermission();
-                            Log.e("TAG ", "onTouch ACTION_DOWN");
+                        } else {
+                            new Handler().postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    tvSpeechInput.setText("You will see input here");
+                                    mSpeechRecognizer.stopListening();
+                                    speakerBtn.cancelAnimation();
+                                }
+                            }, 5000);
+
                             tvSpeechInput.setText("");
                             tvSpeechInput.setHint("Listening...");
                             speakerBtn.playAnimation();
@@ -182,6 +193,10 @@ public class UserSpeakActivity extends AppCompatActivity {
         tvSpeechInput = findViewById(R.id.speech_text_id);
         speakerBtn = findViewById(R.id.speech_image_id);
         tvSpeechInput.setText("You will see input here");
+
+        /** get dictionary list from main activity using intent */
+        dictionaryList = getIntent().getParcelableArrayListExtra("dictionary");
+        Log.e("TAG", "dictionary word size --->" + dictionaryList.size());
     }
 
     private boolean checkPermission() {
