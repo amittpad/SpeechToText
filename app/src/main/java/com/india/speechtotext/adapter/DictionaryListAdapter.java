@@ -2,6 +2,7 @@ package com.india.speechtotext.adapter;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.res.Resources;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,14 +44,15 @@ public class DictionaryListAdapter extends RecyclerView.Adapter<DictionaryListAd
         holder.tvWord.setText(dictionaryList.get(position).getWord());
         holder.tvWordCount.setText(dictionaryList.get(position).getFrequency().toString());
 
-        if(dictionaryList.get(position).getWord().toLowerCase().matches(foundWord.toLowerCase().replace(".", ""))){
-            Log.e("TAG", "--->" + foundWord.toLowerCase().replace(".", ""));
-            mCount = dictionaryList.get(position).getFrequency() + 1;
-            Log.e("TAG", "--->" + mCount);
-            holder.tvWordCount.setText(String.valueOf(mCount));
-            holder.tvWordCount.setBackground(activity.getResources().getDrawable(R.drawable.textview_ronunded_red));
-           // holder.linearLayout.setBackgroundColor(activity.getResources().getColor(R.color.colorLightRed));
-            holder.cardView.setCardBackgroundColor(activity.getResources().getColor(R.color.colorLightRed));
+        if (foundWord != null) {
+            if (dictionaryList.get(position).getWord().toLowerCase().equals(foundWord)) {
+                Log.e("TAG", "--->" + foundWord.toLowerCase().replace(".", ""));
+                mCount = dictionaryList.get(position).getFrequency() + 1;
+                Log.e("TAG", "--->" + mCount);
+                holder.tvWordCount.setText(String.valueOf(mCount));
+                holder.tvWordCount.setBackground(activity.getResources().getDrawable(R.drawable.textview_ronunded_red));
+                holder.cardView.setCardBackgroundColor(activity.getResources().getColor(R.color.colorLightRed));
+            }
         }
     }
 
@@ -64,7 +66,6 @@ public class DictionaryListAdapter extends RecyclerView.Adapter<DictionaryListAd
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvWord, tvWordCount;
-        LinearLayout linearLayout;
         CardView cardView;
 
         public ViewHolder(View itemView) {

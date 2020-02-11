@@ -58,6 +58,9 @@ public class UserSpeakActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_speak);
+        if (!checkPermission()) {
+            requestPermission();
+        }
         initializationView();
         dictionaryList = getIntent().getParcelableArrayListExtra("dictionary");
         Log.e("TAG","dictionary word size --->" + dictionaryList.size());
@@ -121,7 +124,7 @@ public class UserSpeakActivity extends AppCompatActivity {
                             public void run() {
                                 Intent intent = new Intent(UserSpeakActivity.this, MainActivity.class);
                                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.putExtra("key_found_word", arrayList.get(0).toLowerCase());
+                                intent.putExtra("key_found_word", arrayList.get(0).toLowerCase().replace(".", ""));
                                 startActivity(intent);
                             }
                         },2000);
@@ -158,12 +161,15 @@ public class UserSpeakActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_DOWN:
                         if (!checkPermission()) {
                             requestPermission();
+                        }else {
+                            //requestPermission();
+                            Log.e("TAG ", "onTouch ACTION_DOWN");
+                            tvSpeechInput.setText("");
+                            tvSpeechInput.setHint("Listening...");
+                            speakerBtn.playAnimation();
+                            mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
                         }
-                        Log.e("TAG ", "onTouch ACTION_DOWN");
-                        tvSpeechInput.setText("");
-                        tvSpeechInput.setHint("Listening...");
-                        speakerBtn.playAnimation();
-                        mSpeechRecognizer.startListening(mSpeechRecognizerIntent);
+
                         break;
                 }
                 return false;
